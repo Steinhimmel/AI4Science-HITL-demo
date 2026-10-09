@@ -1,0 +1,520 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5efd9">
+  <title>AI4S · 人在回路实验台</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --paper: #f5efd9;
+      --paper-deep: #eee5c9;
+      --card: #fffdf6;
+      --ink: #20252c;
+      --muted: #66717b;
+      --blue: #245684;
+      --blue-deep: #193e62;
+      --blue-soft: #e5eef4;
+      --line: #d8d1bd;
+      --amber: #b66a19;
+      --amber-soft: #f7e9c9;
+      --red: #a63d35;
+      --red-soft: #f8e5df;
+      --green: #38694b;
+      --green-soft: #e7f0e5;
+      --shadow: 0 14px 36px rgba(50, 48, 37, .07);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--ink);
+      background: var(--paper);
+    }
+
+    * { box-sizing: border-box; }
+    body { margin: 0; min-width: 320px; background: var(--paper); }
+    button, input { font: inherit; }
+    button {
+      min-height: 42px;
+      padding: 10px 15px;
+      color: #fff;
+      background: var(--blue);
+      border: 1px solid var(--blue);
+      border-radius: 7px;
+      cursor: pointer;
+      transition: background .16s ease, border-color .16s ease, transform .16s ease;
+    }
+    button:hover:not(:disabled) { background: var(--blue-deep); border-color: var(--blue-deep); transform: translateY(-1px); }
+    button:focus-visible, input:focus-visible {
+      outline: 3px solid #6c9bc1;
+      outline-offset: 2px;
+    }
+    button:disabled { opacity: .45; cursor: not-allowed; }
+    button.secondary { color: var(--blue-deep); background: var(--card); border-color: var(--line); }
+    button.secondary:hover:not(:disabled) { background: var(--blue-soft); border-color: #aebfd0; }
+    button.danger { color: #fff; background: var(--red); border-color: var(--red); }
+    button.danger:hover:not(:disabled) { background: #87312c; border-color: #87312c; }
+    input {
+      min-height: 40px;
+      padding: 8px 10px;
+      color: var(--ink);
+      background: #fffefa;
+      border: 1px solid #c9c3b2;
+      border-radius: 6px;
+    }
+    input[type="number"] { width: 112px; }
+    input[type="checkbox"] { width: 18px; min-height: 18px; height: 18px; accent-color: var(--blue); vertical-align: middle; }
+    small, .muted { color: var(--muted); }
+    main { width: min(1180px, calc(100% - 48px)); margin: 0 auto; padding: 32px 0 60px; }
+
+    .masthead {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid var(--line);
+    }
+    .brand { color: var(--blue-deep); font-size: 13px; font-weight: 750; letter-spacing: .13em; text-transform: uppercase; }
+    .simulation-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 11px;
+      color: #71450f;
+      background: var(--amber-soft);
+      border: 1px solid #e6d39f;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .04em;
+    }
+    .simulation-label::before { width: 7px; height: 7px; content: ""; background: #bd7a1e; border-radius: 50%; }
+    .hero { max-width: 790px; padding: 45px 0 30px; }
+    .eyebrow { margin: 0 0 10px; color: var(--blue); font-size: 12px; font-weight: 750; letter-spacing: .15em; text-transform: uppercase; }
+    h1 { max-width: 700px; margin: 0; color: var(--ink); font-family: Georgia, "Noto Serif SC", "Songti SC", serif; font-size: clamp(34px, 5vw, 54px); font-weight: 500; letter-spacing: -.04em; line-height: 1.14; }
+    .hero-copy { max-width: 680px; margin: 16px 0 0; color: #515b65; font-size: 17px; line-height: 1.8; }
+    .flow { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 22px; color: var(--blue-deep); font-size: 13px; font-weight: 650; }
+    .flow span { padding: 7px 10px; background: rgba(255,253,246,.72); border: 1px solid var(--line); border-radius: 6px; }
+    .flow b { color: #8a927e; font-weight: 500; }
+
+    .card {
+      min-width: 0;
+      margin: 0 0 18px;
+      padding: 23px;
+      background: var(--card);
+      border: 1px solid rgba(201,195,178,.72);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+    }
+    .card-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 16px; }
+    .section-kicker { margin: 0 0 6px; color: var(--blue); font-size: 11px; font-weight: 750; letter-spacing: .12em; text-transform: uppercase; }
+    h2 { margin: 0; color: var(--ink); font-family: Georgia, "Noto Serif SC", "Songti SC", serif; font-size: 23px; font-weight: 500; letter-spacing: -.02em; }
+    h3 { margin: 0; font-size: 15px; }
+    p { line-height: 1.65; }
+    .connect-card { display: grid; grid-template-columns: minmax(220px, 1fr) auto; align-items: end; gap: 18px; }
+    .field-label { display: block; margin-bottom: 7px; color: var(--muted); font-size: 12px; font-weight: 650; }
+    #token { width: 100%; }
+    .connect-help { grid-column: 1 / -1; margin: -7px 0 0; font-size: 12px; }
+    #connect { min-width: 104px; }
+    #error { min-height: 0; margin: 0 0 16px; color: var(--red); font-size: 14px; font-weight: 600; }
+    #error:empty { display: none; }
+    .layout { display: grid; grid-template-columns: minmax(0, 1.08fr) minmax(0, .92fr); gap: 20px; align-items: start; }
+    .state-line { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+    #state { font-family: inherit; font-size: 20px; font-weight: 750; letter-spacing: 0; }
+    .state-mark { width: 9px; height: 9px; flex: 0 0 auto; background: #929b9f; border-radius: 50%; }
+    #reason { min-height: 0; margin: 10px 0; color: var(--muted); font-size: 14px; }
+    #reason:empty { display: none; }
+    pre {
+      max-height: 230px;
+      overflow: auto;
+      margin: 14px 0;
+      padding: 13px 14px;
+      color: #29435a;
+      background: #f1f4f3;
+      border: 1px solid #dce3e1;
+      border-radius: 7px;
+      font: 12px/1.65 ui-monospace, SFMono-Regular, Consolas, monospace;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+    .button-row { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 15px; }
+    .safety-note { margin: 13px 0 0; color: var(--muted); font-size: 12px; }
+    .safety-note strong { color: var(--red); }
+
+    .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 13px; margin: 18px 0; }
+    .form-field { display: flex; flex-direction: column; gap: 6px; }
+    .form-field label { color: var(--muted); font-size: 12px; font-weight: 650; }
+    .form-field input { width: 100%; }
+    .field-hint { color: #78818a; font-size: 11px; }
+    .plan-intro { margin: 10px 0 0; color: var(--muted); font-size: 13px; }
+    .plan {
+      margin: 13px 0 0;
+      padding: 16px;
+      background: #f8f7ef;
+      border: 1px solid #cbd4d7;
+      border-left: 4px solid var(--blue);
+      border-radius: 7px;
+    }
+    .plan strong { color: var(--blue-deep); font-size: 14px; }
+    .plan p { margin: 9px 0; color: #515b65; font-size: 12px; }
+    .plan .hash { padding: 8px; background: #eff1ed; border-radius: 5px; color: #344c60; font: 11px/1.55 ui-monospace, SFMono-Regular, Consolas, monospace; overflow-wrap: anywhere; }
+    .plan input { width: 100%; margin: 2px 0 10px; }
+    .plan button { margin: 3px 5px 3px 0; }
+    .plan button:nth-of-type(2), .plan button:nth-of-type(3) { color: var(--blue-deep); background: #fffdf6; border-color: var(--line); }
+    .plan button:nth-of-type(2):hover:not(:disabled), .plan button:nth-of-type(3):hover:not(:disabled) { background: var(--blue-soft); }
+    .plan button:last-child { display: block; margin-top: 10px; }
+
+    .fault-card { background: #fbf4e2; box-shadow: none; }
+    .fault-warning { margin: 8px 0 15px; color: #785b2d; font-size: 12px; }
+    .toggle-row { display: flex; flex-wrap: wrap; gap: 16px; }
+    .toggle-row label { display: inline-flex; align-items: center; gap: 7px; color: #414a50; font-size: 13px; }
+    .chart-wrap { min-height: 260px; padding: 8px 3px 0; }
+    canvas { display: block; width: 100%; height: 280px; }
+    #source { margin: 8px 0 0; color: var(--blue-deep); font-size: 13px; font-weight: 650; }
+    .data-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--line); }
+    .data-tools .upload-label { margin-left: auto; color: var(--muted); font-size: 12px; }
+    #file { max-width: 190px; min-height: 36px; padding: 5px; font-size: 11px; }
+    .data-note { margin: 12px 0 0; color: var(--muted); font-size: 11px; }
+    #events { max-height: 300px; margin-bottom: 0; }
+
+    .guide { margin-top: 12px; padding-top: 28px; border-top: 1px solid var(--line); }
+    .guide-intro { max-width: 700px; margin: 9px 0 19px; color: var(--muted); font-size: 14px; line-height: 1.75; }
+    .guide-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+    .guide-item { padding: 17px; background: rgba(255,253,246,.72); border: 1px solid var(--line); border-radius: 9px; }
+    .guide-number { display: inline-block; margin-bottom: 12px; color: var(--blue); font: 700 11px ui-monospace, monospace; letter-spacing: .08em; }
+    .guide-item h3 { color: var(--blue-deep); }
+    .guide-item p { margin: 8px 0 0; color: #59636b; font-size: 12px; line-height: 1.7; }
+    .footer-note { margin: 22px 0 0; padding: 15px 17px; color: #694f29; background: var(--amber-soft); border-radius: 8px; font-size: 12px; line-height: 1.7; }
+
+    @media (max-width: 860px) {
+      main { width: min(100% - 32px, 680px); padding-top: 20px; }
+      .layout { grid-template-columns: 1fr; gap: 0; }
+      .guide-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .hero { padding-top: 34px; }
+    }
+    @media (max-width: 560px) {
+      main { width: calc(100% - 24px); padding-top: 14px; }
+      .masthead { align-items: flex-start; }
+      .brand { font-size: 11px; }
+      .simulation-label { padding: 6px 8px; font-size: 10px; }
+      .hero { padding: 30px 0 22px; }
+      .hero-copy { font-size: 15px; }
+      .card { padding: 17px; border-radius: 9px; }
+      .connect-card { grid-template-columns: 1fr; gap: 11px; }
+      .connect-help { grid-column: auto; margin: 0; }
+      #connect { width: 100%; }
+      .form-grid { gap: 10px; }
+      input[type="number"] { width: 100%; }
+      .guide-grid { grid-template-columns: 1fr; }
+      .data-tools .upload-label { width: 100%; margin-left: 0; }
+      #file { max-width: none; width: 100%; }
+      canvas { height: 240px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header class="masthead">
+      <div class="brand">AI4S &nbsp; / &nbsp; Human-in-the-loop</div>
+      <div class="simulation-label">模拟环境 · 不连接真实仪器</div>
+    </header>
+
+    <section class="hero" aria-labelledby="page-title">
+      <p class="eyebrow">实验控制原型 · 人工保留最终授权权</p>
+      <h1 id="page-title">让每一次实验执行，<br>都经过清晰的人为判断。</h1>
+      <p class="hero-copy">Agent 提出实验计划，控制层检查边界，操作员审阅并决定是否放行。只有经过审批的计划才能启动模拟扫描。</p>
+      <div class="flow" aria-label="实验流程">
+        <span>提出计划</span><b>→</b><span>人工审阅</span><b>→</b><span>安全检查</span><b>→</b><span>模拟执行与数据回流</span>
+      </div>
+    </section>
+
+    <section class="card connect-card" aria-label="操作者连接">
+      <div>
+        <label class="field-label" for="token">操作者凭据</label>
+        <input type="password" id="token" autocomplete="off" placeholder="粘贴 .runtime/operator.token 的内容">
+      </div>
+      <button id="connect" type="button">连接控制台</button>
+      <p class="connect-help muted">凭据只保存在当前页面内存中；刷新页面后需要重新连接。请勿将操作者凭据提供给 Agent。</p>
+    </section>
+    <div id="error" role="alert" aria-live="assertive"></div>
+
+    <div class="layout">
+      <section aria-label="控制与审批">
+        <article class="card">
+          <div class="card-heading">
+            <div>
+              <p class="section-kicker">01 / Device state</p>
+              <div class="state-line"><span class="state-mark" aria-hidden="true"></span><h2 id="state">未连接</h2></div>
+            </div>
+          </div>
+          <p id="reason"></p>
+          <pre id="feedback" aria-label="模拟设备状态反馈">等待连接以读取设备状态。</pre>
+          <div class="button-row">
+            <button class="secondary" data-action="reset" type="button">人工复位</button>
+            <button class="secondary" data-action="stop" type="button">停止</button>
+            <button class="danger" data-action="estop" type="button">软件急停 · 锁存</button>
+          </div>
+          <p class="safety-note"><strong>安全提示：</strong>复位不会启动实验。软件急停仅用于本地模拟，不替代真实设备的实体急停或硬件联锁。</p>
+        </article>
+
+        <article class="card">
+          <div class="card-heading">
+            <div>
+              <p class="section-kicker">02 / Experiment proposal</p>
+              <h2>提交 XRD 扫描计划</h2>
+            </div>
+          </div>
+          <p class="muted">填写扫描范围和采集节奏，生成一份待审批计划。计划提交不会启动设备。</p>
+          <div class="form-grid">
+            <div class="form-field"><label for="low">起始角度 · °</label><input id="low" type="number" value="20" step="0.1"><span class="field-hint">扫描起点</span></div>
+            <div class="form-field"><label for="high">结束角度 · °</label><input id="high" type="number" value="70" step="0.1"><span class="field-hint">扫描终点</span></div>
+            <div class="form-field"><label for="step">步长 · °</label><input id="step" type="number" value="0.1" step="0.01"><span class="field-hint">相邻采样点的角度间隔</span></div>
+            <div class="form-field"><label for="dwell">驻留时间 · 秒</label><input id="dwell" type="number" value="0.02" step="0.01"><span class="field-hint">每个采样点的模拟等待时间</span></div>
+          </div>
+          <button id="propose" type="button">生成待审计划</button>
+          <p class="plan-intro">由 API / MCP 提交的 Agent 计划也会显示在下方审批列表。</p>
+          <div id="plans" aria-live="polite"></div>
+        </article>
+
+        <article class="card fault-card">
+          <div class="card-heading">
+            <div>
+              <p class="section-kicker">03 / Simulation controls</p>
+              <h2>模拟联锁状态</h2>
+            </div>
+          </div>
+          <p class="fault-warning">仅用于演示异常处理：切换为不安全状态后，系统应阻止启动或触发停止。</p>
+          <div class="toggle-row">
+            <label><input id="door_closed" type="checkbox" checked> 模拟舱门关闭</label>
+            <label><input id="cooling_ok" type="checkbox" checked> 模拟冷却正常</label>
+          </div>
+        </article>
+      </section>
+
+      <section aria-label="实验数据与记录">
+        <article class="card">
+          <div class="card-heading">
+            <div>
+              <p class="section-kicker">04 / Measurement data</p>
+              <h2>模拟衍射谱</h2>
+            </div>
+          </div>
+          <p class="muted">横轴为 2θ 角度，纵轴为模拟强度。运行期间图表会随采集进度更新。</p>
+          <div class="chart-wrap"><canvas id="plot" role="img" aria-label="XRD 模拟衍射谱图"></canvas></div>
+          <p id="source" aria-live="polite">等待采样</p>
+          <div class="data-tools">
+            <button class="secondary" id="csv" type="button">导出 CSV</button>
+            <button class="secondary" id="json" type="button">导出 JSON</button>
+            <label class="upload-label" for="file">导入 CSV / JSON</label>
+            <input id="file" type="file" accept=".csv,.json">
+          </div>
+          <p class="data-note">CSV 表头为 <code>two_theta,intensity</code>。导入数据仅作为未验证数据展示，不会产生设备命令。</p>
+        </article>
+
+        <article class="card">
+          <div class="card-heading">
+            <div>
+              <p class="section-kicker">05 / Traceability</p>
+              <h2>操作与审批记录</h2>
+            </div>
+          </div>
+          <p class="muted">按时间倒序显示提案、人工决定、运行和安全事件，便于复盘本次演示。</p>
+          <pre id="events" aria-live="polite">连接后显示最近的操作记录。</pre>
+        </article>
+      </section>
+    </div>
+
+    <section class="guide" aria-labelledby="guide-title">
+      <p class="section-kicker">A guide to this console</p>
+      <h2 id="guide-title">界面模块说明</h2>
+      <p class="guide-intro">每个区域在 HITL 流程中承担不同职责：连接负责操作者身份，审批区把人的决定变成执行门槛，数据和记录区则帮助操作员观察与追溯结果。</p>
+      <div class="guide-grid">
+        <article class="guide-item"><span class="guide-number">MODULE 01</span><h3>操作者连接</h3><p>输入本地服务生成的操作者凭据，建立有权限的控制台会话。Agent 使用另一身份；不要把这里的凭据交给模型。</p></article>
+        <article class="guide-item"><span class="guide-number">MODULE 02</span><h3>设备状态与安全控制</h3><p>显示模拟服务状态、联锁反馈和异常原因。人工复位只恢复到可操作状态；停止和软件急停用于中断流程，其中急停会锁存状态。</p></article>
+        <article class="guide-item"><span class="guide-number">MODULE 03</span><h3>实验计划与人工审批</h3><p>参数表单生成待审扫描计划。审批卡片展示参数、计划标识和摘要；操作员可批准、拒绝或撤销。批准与启动分开，计划变化后不能沿用旧批准。</p></article>
+        <article class="guide-item"><span class="guide-number">MODULE 04</span><h3>模拟联锁</h3><p>舱门和冷却开关模拟设备保护条件，用来验证不安全状态下的拒绝启动和停止行为。这些开关不是实际传感器，也不能代表硬件保护。</p></article>
+        <article class="guide-item"><span class="guide-number">MODULE 05</span><h3>数据图表与文件</h3><p>图表展示模拟或导入的角度—强度数据；CSV / JSON 用于导出或回放。导入文件标记为未验证数据，不是实验室测量结果。</p></article>
+        <article class="guide-item"><span class="guide-number">MODULE 06</span><h3>操作与审批记录</h3><p>显示最近的提案、审批、启动、停止和安全事件，为演示提供可追踪证据。它是本地原型日志，不等同于防篡改的生产审计系统。</p></article>
+      </div>
+      <p class="footer-note"><strong>演示建议：</strong>先提交并拒绝一个计划，观察设备不启动；再批准一个合规计划并启动，观察数据回流。也可以切换一个模拟联锁开关，展示异常如何阻止执行。页面中的扫描信号、设备状态和安全开关均为软件模拟，不代表真实仪器或实验结果。</p>
+    </section>
+  </main>
+
+  <script>
+    const $ = id => document.getElementById(id);
+    let token = '', active = false, last = null, planSignature = '', busy = false;
+
+    async function api(path, data) {
+      const response = await fetch('/api/' + path, {
+        method: data === undefined ? 'GET' : 'POST',
+        headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+        body: data === undefined ? undefined : JSON.stringify(data)
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw Error(error.error);
+      }
+      return response;
+    }
+
+    async function action(path, data = {}) {
+      try {
+        $('error').textContent = '';
+        await api(path, data);
+        await refresh();
+      } catch (error) {
+        $('error').textContent = error.message;
+      }
+    }
+
+    $('connect').onclick = async () => {
+      token = $('token').value.trim();
+      $('token').value = '';
+      active = true;
+      await refresh();
+    };
+    document.querySelectorAll('[data-action]').forEach(button => {
+      button.onclick = () => action(button.dataset.action);
+    });
+    $('propose').onclick = () => action('propose', {
+      params: Object.fromEntries(['low', 'high', 'step', 'dwell'].map(key => [key, Number($(key).value)]))
+    });
+    ['door_closed', 'cooling_ok'].forEach(key => {
+      $(key).onchange = () => action('fault', { name: key, value: $(key).checked });
+    });
+    $('file').onchange = async event => {
+      const file = event.target.files[0];
+      if (file) await action('import', {
+        payload: await file.text(),
+        format: file.name.toLowerCase().endsWith('.json') ? 'json' : 'csv'
+      });
+    };
+
+    async function download(format) {
+      try {
+        const response = await api('export.' + format);
+        const url = URL.createObjectURL(await response.blob());
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'xrd.' + format;
+        link.click();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      } catch (error) {
+        $('error').textContent = error.message;
+      }
+    }
+    $('csv').onclick = () => download('csv');
+    $('json').onclick = () => download('json');
+
+    function add(parent, tag, text, className) {
+      const element = document.createElement(tag);
+      element.textContent = text;
+      if (className) element.className = className;
+      parent.append(element);
+      return element;
+    }
+
+    function renderPlans(plans) {
+      const signature = JSON.stringify(plans);
+      if (signature === planSignature) return;
+      planSignature = signature;
+      $('plans').replaceChildren();
+      for (const plan of plans) {
+        const card = add($('plans'), 'div', '', 'plan');
+        add(card, 'strong', plan.review + ' · ' + plan.owner);
+        add(card, 'p', JSON.stringify(plan.params));
+        add(card, 'p', '计划 ' + plan.id + ' / 截止 ' + new Date(plan.expires * 1000).toLocaleTimeString());
+        add(card, 'p', 'SHA256: ' + plan.hash, 'hash');
+        const note = document.createElement('input');
+        note.placeholder = '审批备注';
+        note.maxLength = 500;
+        card.append(note);
+        for (const [label, decision] of [['批准', 'APPROVE'], ['拒绝', 'REJECT'], ['撤销批准', 'REVOKE']]) {
+          const button = add(card, 'button', label);
+          button.type = 'button';
+          button.disabled = plan.used || plan.review !== (decision === 'REVOKE' ? 'APPROVE' : 'PENDING');
+          button.onclick = () => action('review', {
+            plan_id: plan.id, expected_hash: plan.hash, decision, comment: note.value
+          });
+        }
+        const run = add(card, 'button', '启动此已批准计划');
+        run.type = 'button';
+        run.disabled = !plan.approved || plan.used;
+        run.onclick = () => action('execute', { plan_id: plan.id });
+      }
+    }
+
+    function plot(points) {
+      const canvas = $('plot');
+      const ratio = window.devicePixelRatio || 1;
+      canvas.width = canvas.clientWidth * ratio;
+      canvas.height = canvas.clientHeight * ratio;
+      const context = canvas.getContext('2d');
+      context.scale(ratio, ratio);
+      const width = canvas.clientWidth, height = canvas.clientHeight;
+      context.strokeStyle = '#9aa6a7';
+      context.lineWidth = 1;
+      context.beginPath();
+      context.moveTo(48, 10);
+      context.lineTo(48, height - 32);
+      context.lineTo(width - 10, height - 32);
+      context.stroke();
+      if (!points.length) return;
+      const min = points[0].two_theta;
+      const max = Math.max(min + 1, points[points.length - 1].two_theta);
+      const top = Math.max(1, ...points.map(point => point.intensity)) * 1.1;
+      context.fillStyle = '#5d6c73';
+      context.font = '12px system-ui';
+      for (let index = 0; index <= 4; index++) {
+        context.fillText((min + (max - min) * index / 4).toFixed(1), 48 + (width - 70) * index / 4, height - 10);
+        context.fillText((top * index / 4).toFixed(0), 0, height - 32 - (height - 50) * index / 4);
+      }
+      context.strokeStyle = '#245684';
+      context.lineWidth = 2;
+      context.beginPath();
+      points.forEach((point, index) => {
+        const x = 48 + (point.two_theta - min) / (max - min) * (width - 70);
+        const y = height - 32 - point.intensity / top * (height - 50);
+        if (index) context.lineTo(x, y);
+        else context.moveTo(x, y);
+      });
+      context.stroke();
+    }
+
+    async function refresh() {
+      if (!active || busy) return;
+      busy = true;
+      try {
+        last = await (await api('status')).json();
+        $('state').textContent = last.state + ' · ' + last.mode;
+        $('reason').textContent = last.reason;
+        $('feedback').textContent = JSON.stringify(last.feedback, null, 2);
+        if (last.feedback) {
+          for (const key of ['door_closed', 'cooling_ok']) $(key).checked = last.feedback[key];
+        }
+        renderPlans(last.plans);
+        const dataset = last.dataset;
+        $('source').textContent = dataset
+          ? dataset.source + ' / ' + dataset.outcome + ' / ' + dataset.points.length + ' 点'
+          : '等待采样';
+        plot(dataset ? dataset.points : []);
+        $('events').textContent = last.events.map(event =>
+          new Date(event.time * 1000).toLocaleTimeString() + ' ' + event.actor + ' ' + event.action + ' ' + JSON.stringify(event.detail)
+        ).join('\n');
+      } catch (error) {
+        $('state').textContent = '连接失败 · 设备状态未知';
+        $('error').textContent = error.message;
+      } finally {
+        busy = false;
+      }
+    }
+
+    window.addEventListener('resize', () => {
+      if (last && last.dataset) plot(last.dataset.points);
+    });
+    setInterval(refresh, 500);
+  </script>
+</body>
+</html>

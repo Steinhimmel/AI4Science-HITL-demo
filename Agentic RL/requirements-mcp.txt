@@ -1,0 +1,2 @@
+# Optional: Python >=3.10, official MCP SDK 2.x interface.
+mcp>=2.0.0,<3
